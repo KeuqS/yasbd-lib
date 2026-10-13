@@ -342,7 +342,21 @@ def langs():
 
 
 def _configure_output_encoding() -> None:
-    """Ensure redirected CLI output can encode Unicode on legacy Windows streams."""
+    """Ensure redirected CLI output can encode Unicode on legacy Windows streams.
+
+    >>> class RecordingStream:
+    ...     def __init__(self):
+    ...         self.encoding = "cp1252"
+    ...     def reconfigure(self, **kwargs):
+    ...         self.encoding = kwargs["encoding"]
+    >>> original_stdout, original_stderr = sys.stdout, sys.stderr
+    >>> fake_stdout, fake_stderr = RecordingStream(), RecordingStream()
+    >>> sys.stdout, sys.stderr = fake_stdout, fake_stderr
+    >>> _configure_output_encoding()
+    >>> sys.stdout, sys.stderr = original_stdout, original_stderr
+    >>> (fake_stdout.encoding, fake_stderr.encoding)
+    ('utf-8', 'utf-8')
+    """
     for stream in (sys.stdout, sys.stderr):
         reconfigure = getattr(stream, "reconfigure", None)
         if reconfigure is not None:
