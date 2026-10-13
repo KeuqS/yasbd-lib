@@ -341,8 +341,18 @@ def langs():
     print(", ".join(get_supported_langs()))
 
 
+def _configure_output_encoding() -> None:
+    """Ensure redirected CLI output can encode Unicode on legacy Windows streams."""
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            reconfigure(encoding="utf-8")
+
+
 def main():
     """CLI entry point. Handles --version, --help, and dispatches to radicli."""
+    _configure_output_encoding()
+
     if len(sys.argv) > 1 and sys.argv[1] in ("--version", "-v"):
         print(_version())
         sys.exit(0)
